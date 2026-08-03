@@ -1,14 +1,13 @@
-FROM ubuntu:22.04
+# 1. 使用官方 Node.js 基础镜像（自带 npms 与 node 环境，且稳定开放）
+FROM node:20-slim
 
-# 1. 禁用交互式提示，安装基础系统依赖与虚拟显示环境
+# 2. 安装 DBus、Xvfb 以及 Electron 渲染所需的无头系统库
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y \
-    curl \
-    wget \
-    jq \
     xvfb \
     dbus \
     x11-utils \
+    procps \
     libnss3 \
     libatk1.0-0 \
     libatk-bridge2.0-0 \
@@ -22,15 +21,13 @@ RUN apt-get update && apt-get install -y \
     libasound2 \
     && rm -rf /var/lib/apt/lists/*
 
-# 2. 运行 NapCat 官方 Linux 一键安装脚本
-RUN curl -o install.sh https://nclatest.com/napcat/install.sh && \
-    chmod +x install.sh && \
-    bash install.sh --no-prompt || true
+# 3. 通过 npm 全局安装 NapCatQQ（官方最纯粹的安装方式）
+RUN npm install -g napcat@latest
 
-# 3. 设置虚拟显示与无头环境变量
+# 4. 配置显示与无头环境变量
 ENV DISPLAY=:99
 ENV ELECTRON_ENABLE_LOGGING=true
 ENV ELECTRON_DISABLE_SECURITY_WARNINGS=true
 
-# 4. 启动守护进程并拉起 NapCat
-CMD ["sh", "-c", "dbus-daemon --system --fork && Xvfb :99 -screen 0 1024x768x16 & sleep 3 && napcat"]
+# 5. 自动创建 dbus 目录，启动虚拟显示，然后直接运行 napcat
+CMD ["sh", "-c", "mkdir -p /var/run/dbus && dbus-daemon --config-file=/usr/share/dbus-1/system.conf --fork && Xvfb :99 -screen 0 1024x768x16 & sleep 3 && napcat --no-gui"]
