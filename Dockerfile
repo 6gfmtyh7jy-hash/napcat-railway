@@ -1,8 +1,8 @@
 FROM mlikiowa/napcat-docker:latest
 
-RUN apt update && apt install -y xvfb dbus-x11
-
+# 启动脚本，运行容器时再安装依赖
 RUN echo '#!/bin/bash' > /start.sh \
+&& echo 'apt update && apt install -y xvfb dbus-x11' >> /start.sh \
 && echo 'dbus-daemon --session --fork --print-address' >> /start.sh \
 && echo 'Xvfb :99 -screen 0 1280x720x16 &' >> /start.sh \
 && echo 'export DISPLAY=:99' >> /start.sh \
