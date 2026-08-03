@@ -1,4 +1,4 @@
-FROM mlgrub/napcat-docker:latest
+FROM napcat/napcat-qq:latest
 
 # 安装 DBus 和 Xvfb 虚拟显示服务，解决 Electron 缺失界面的崩溃问题
 USER root
